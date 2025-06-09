@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/create-room/create-room",
+    "pages/room/room"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "天天打牌",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f8f9fa"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

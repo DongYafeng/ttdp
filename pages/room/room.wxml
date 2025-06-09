@@ -1,0 +1,246 @@
+<!--room.wxml-->
+<view class="container">
+  <!-- 房间信息头部 -->
+  <view class="room-header">
+    <view class="room-info">
+      <text class="room-name">{{roomInfo.name}}</text>
+      <text class="room-details">{{roomInfo.gameType}} · {{roomInfo.players.length}}/{{roomInfo.maxPlayers}}人</text>
+    </view>
+    <view class="room-actions">
+      <button wx:if="{{isHost}}" class="btn-share" bindtap="shareRoom">
+        <view class="share-icon-wrapper">
+          <text class="share-icon">🔗</text>
+        </view>
+        <text class="share-text">分享</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 玩家列表 -->
+  <view class="players-section">
+    <view class="section-title">
+      <text class="title-text">玩家列表</text>
+      <text class="title-count">({{roomInfo.players.length}}人)</text>
+    </view>
+    
+    <view class="players-grid">
+      <view 
+        wx:for="{{roomInfo.players}}" 
+        wx:key="playerId" 
+        class="player-card {{item.playerId === currentPlayerId ? 'current-player' : ''}}"
+        bindtap="selectPlayer"
+        data-player="{{item}}"
+      >
+        <view wx:if="{{item.isHost}}" class="host-badge">房主</view>
+        <view class="player-avatar-container">
+          <image class="player-avatar" src="{{item.avatarUrl || '/images/default-avatar.svg'}}" />
+        </view>
+        <view class="player-info">
+          <view class="player-name-row">
+            <text class="player-name">{{item.nickName}}</text>
+          </view>
+          <view class="score-container">
+            <text class="score-label">分数</text>
+            <text class="score-value {{item.score >= 0 ? 'positive' : 'negative'}}">
+              {{item.score >= 0 ? '+' : ''}}{{item.score}}
+            </text>
+          </view>
+        </view>
+        <view class="select-indicator">
+          <text class="select-text">{{item.playerId === currentPlayerId ? '点击编辑' : '点击转分'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 计分历史 -->
+  <view class="history-section">
+    <view class="section-title">
+      <text class="title-text">计分记录</text>
+      <text class="title-count">({{scoreHistory.length}}条)</text>
+    </view>
+    
+    <view wx:if="{{scoreHistory.length === 0}}" class="empty-history">
+      <text class="empty-text">暂无计分记录</text>
+    </view>
+    
+    <view wx:else class="history-list">
+      <view 
+        wx:for="{{scoreHistory}}" 
+        wx:key="id" 
+        class="history-item"
+      >
+        <view class="history-content">
+          <text class="history-text">
+            {{item.fromPlayer}} 向 {{item.toPlayer}} 转分 {{item.score}}
+          </text>
+          <text class="history-time">{{item.time}}</text>
+        </view>
+        <view class="history-score {{item.score >= 0 ? 'positive' : 'negative'}}">
+          {{item.score >= 0 ? '+' : ''}}{{item.score}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <button class="btn-primary" bindtap="exitRoom">
+      退出房间
+    </button>
+  </view>
+</view>
+
+<!-- 分享房间弹窗 -->
+<view wx:if="{{showShareModal}}" class="modal-overlay" bindtap="closeShareModal">
+  <view class="share-modal" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">扫码进入房间</text>
+      <button class="modal-close" bindtap="closeShareModal">×</button>
+    </view>
+    
+    <view class="share-content">
+      <!-- 房间信息卡片 -->
+      <view class="room-info-card">
+        <view class="room-card-details">
+          <view class="room-detail-item room-name-item">
+            <text class="detail-label">房间名称</text>
+            <text class="detail-value">{{roomInfo.name}}</text>
+          </view>
+          <view class="room-detail-item">
+            <text class="detail-label">当前人数</text>
+            <text class="detail-value">{{roomInfo.players.length}}/{{roomInfo.maxPlayers}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 二维码展示区域 -->
+      <view class="qr-section">
+        <view class="qr-container">
+          <!-- 官方小程序码 -->
+          <image 
+            wx:if="{{useOfficialQRCode && officialQRCodePath}}"
+            src="{{officialQRCodePath}}"
+            class="official-qr-image"
+            mode="aspectFit"
+            style="width: {{qrSize}}px; height: {{qrSize}}px;"
+          />
+          
+          <!-- 本地生成的二维码 -->
+          <view wx:else class="local-qr-wrapper">
+            <canvas 
+              canvas-id="qrcode" 
+              class="qr-canvas"
+              style="width: {{qrSize}}px; height: {{qrSize}}px;"
+            ></canvas>
+          </view>
+        </view>
+        
+        <!-- 二维码类型标识 -->
+        <view class="qr-type-badge">
+          <text class="qr-type-text">
+            {{useOfficialQRCode ? '官方小程序码' : '房间二维码'}}
+          </text>
+        </view>
+      </view>
+
+      <!-- 分享提示 -->
+      <view class="share-tips">
+        <view class="tip-item">
+          <text class="tip-icon">⏰</text>
+          <text class="tip-text">
+            {{useOfficialQRCode ? '小程序码24小时内有效' : '二维码2小时内有效'}}
+          </text>
+        </view>
+        <view class="tip-item">
+          <text class="tip-icon">👥</text>
+          <text class="tip-text">最多支持{{roomInfo.maxPlayers}}人同时游戏</text>
+        </view>
+        <view class="tip-item">
+          <text class="tip-icon">📱</text>
+          <text class="tip-text">
+            {{useOfficialQRCode ? '扫码或长按识别即可加入' : '使用天天打牌扫一扫功能'}}
+          </text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="share-actions">
+      <button class="btn-primary share-btn" bindtap="closeShareModal">知道了</button>
+    </view>
+  </view>
+</view>
+
+<!-- 计分弹窗 -->
+<view wx:if="{{showScoreModal}}" class="modal-overlay" bindtap="closeScoreModal">
+  <view class="score-modal" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">向 {{selectedPlayer.nickName}} 转分</text>
+      <button class="modal-close" bindtap="closeScoreModal">×</button>
+    </view>
+    
+    <view class="modal-content">
+      <view class="score-input-section">
+        <text class="input-label">输入分数</text>
+        <input 
+          class="score-input" 
+          type="number" 
+          placeholder="请输入转分数量" 
+          value="{{inputScore}}"
+          bindinput="onScoreInput"
+          focus="{{showScoreModal}}"
+        />
+      </view>
+    </view>
+    
+    <view class="modal-actions">
+      <button class="btn-primary modal-btn-single" bindtap="confirmScore" disabled="{{!inputScore || inputScore <= 0}}">确认转分</button>
+    </view>
+  </view>
+</view>
+
+<!-- 编辑用户信息弹窗 -->
+<view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
+  <view class="edit-modal" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">编辑个人信息</text>
+      <button class="modal-close" bindtap="closeEditModal">×</button>
+    </view>
+    
+    <view class="modal-content">
+      <!-- 头像选择 -->
+      <view class="avatar-section">
+        <text class="input-label">头像</text>
+        <view class="avatar-selector">
+          <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+            <image class="edit-avatar" src="{{editAvatarUrl || '/images/default-avatar.svg'}}" />
+            <view class="avatar-overlay">
+              <text class="avatar-text">点击更换</text>
+            </view>
+          </button>
+        </view>
+        <text class="input-hint">点击头像可更换为微信头像</text>
+      </view>
+      
+      <!-- 昵称编辑 -->
+      <view class="nickname-section">
+        <text class="input-label">昵称</text>
+        <input 
+          class="nickname-input" 
+          type="nickname"
+          placeholder="请输入昵称" 
+          value="{{editNickName}}"
+          bindinput="onNickNameInput"
+          maxlength="10"
+          focus="{{showEditModal}}"
+        />
+        <text class="input-hint">昵称不能超过10个字符</text>
+      </view>
+    </view>
+    
+    <view class="modal-actions">
+      <button class="btn-secondary modal-btn" bindtap="closeEditModal">取消</button>
+      <button class="btn-primary modal-btn" bindtap="confirmEdit" disabled="{{!editNickName}}">确认修改</button>
+    </view>
+  </view>
+</view>
