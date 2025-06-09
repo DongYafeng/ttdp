@@ -742,7 +742,7 @@
 }
 
 .modal-content {
-  padding: 60rpx 40rpx 40rpx 40rpx;
+  padding: 80rpx 40rpx 60rpx 40rpx;
 }
 
 .score-input-section {
@@ -754,13 +754,13 @@
   background: #f8fafc;
   border: 3rpx solid #e2e8f0;
   border-radius: 20rpx;
-  padding: 40rpx 32rpx;
-  font-size: 48rpx;
+  padding: 60rpx 32rpx;
+  font-size: 56rpx;
   text-align: center;
   font-weight: 700;
   box-sizing: border-box;
-  height: 120rpx;
-  line-height: 1.2;
+  height: 160rpx;
+  line-height: 1.1;
   color: #2d3748;
   transition: all 0.3s ease;
 }
@@ -769,12 +769,6 @@
   border-color: #667eea;
   box-shadow: 0 0 0 8rpx rgba(102, 126, 234, 0.1);
   background: white;
-}
-
-.score-input::placeholder {
-  color: #a0aec0;
-  font-size: 32rpx;
-  font-weight: 500;
 }
 
 .modal-actions {

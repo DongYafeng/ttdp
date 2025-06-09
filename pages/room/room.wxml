@@ -179,7 +179,7 @@
         <input 
           class="score-input" 
           type="number" 
-          placeholder="请输入转分数量" 
+          placeholder="" 
           value="{{inputScore}}"
           bindinput="onScoreInput"
           focus="{{showScoreModal}}"
@@ -188,7 +188,7 @@
     </view>
     
     <view class="modal-actions">
-      <button class="btn-primary modal-btn-single" bindtap="confirmScore" disabled="{{!inputScore || inputScore <= 0}}">确认转分</button>
+      <button class="btn-primary modal-btn-single" bindtap="confirmScore" disabled="{{!inputScore || inputScore <= 0}}">确认</button>
     </view>
   </view>
 </view>
