@@ -174,14 +174,8 @@
 <!-- 计分弹窗 -->
 <view wx:if="{{showScoreModal}}" class="modal-overlay" bindtap="closeScoreModal">
   <view class="score-modal" catchtap="stopPropagation">
-    <view class="modal-header">
-      <text class="modal-title">向 {{selectedPlayer.nickName}} 转分</text>
-      <button class="modal-close" bindtap="closeScoreModal">×</button>
-    </view>
-    
     <view class="modal-content">
       <view class="score-input-section">
-        <text class="input-label">输入分数</text>
         <input 
           class="score-input" 
           type="number" 
